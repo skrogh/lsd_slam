@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include <ros/ros.h>
 #include "IOWrapper/Output3DWrapper.h"
 
 
@@ -53,14 +52,14 @@ struct GraphFramePose
 
 
 
-/** Addition to LiveSLAMWrapper for ROS interoperability. */
-class ROSOutput3DWrapper : public Output3DWrapper
+/** Addition to LiveSLAMWrapper for OpenCV interoperability. */
+class OpenCVOutput3DWrapper : public Output3DWrapper
 {
 public:
 
 	// initializes cam-calib independent stuff
-	ROSOutput3DWrapper(int width, int height);
-	~ROSOutput3DWrapper();
+	OpenCVOutput3DWrapper(int width, int height);
+	~OpenCVOutput3DWrapper();
 
 	virtual void publishKeyframeGraph(KeyFrameGraph* graph);
 
@@ -82,23 +81,6 @@ public:
 	
 private:
 	int width, height;
-
-	std::string liveframe_channel;
-	ros::Publisher liveframe_publisher;
-
-	std::string keyframe_channel;
-	ros::Publisher keyframe_publisher;
-
-	std::string graph_channel;
-	ros::Publisher graph_publisher;
-
-	std::string debugInfo_channel;
-	ros::Publisher debugInfo_publisher;
-
-
-	std::string pose_channel;
-	ros::Publisher pose_publisher;
-
-	ros::NodeHandle nh_;
+	FILE *gnuplot;
 };
 }

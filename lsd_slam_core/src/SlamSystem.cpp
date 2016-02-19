@@ -163,6 +163,9 @@ SlamSystem::~SlamSystem()
 	delete keyFrameGraph;
 
 	FrameMemory::getInstance().releaseBuffes();
+
+
+	Util::closeAllWindows();
 }
 
 void SlamSystem::setVisualization(Output3DWrapper* outputWrapper)
@@ -677,7 +680,7 @@ void SlamSystem::debugDisplayDepthMap()
 			keyFrameGraph->totalVertices,
 			(int)keyFrameGraph->edgesAll.size(),
 			1e-6 * (float)keyFrameGraph->totalPoints);
-
+	// printf("Tracking: %s\n%s\n",buf1, buf2); // Print debug info to terminal instead of on image
 
 	if(onSceenInfoDisplay)
 		printMessageOnCVImage(map->debugImageDepth, buf1, buf2);
@@ -831,7 +834,7 @@ void SlamSystem::gtDepthInit(uchar* image, float* depth, double timeStamp, int i
 
 	currentKeyFrameMutex.lock();
 
-	currentKeyFrame = std::make_shared<Frame>(id, width, height, K, timeStamp, image);
+	currentKeyFrame.reset(new Frame(id, width, height, K, timeStamp, image));
 	currentKeyFrame->setDepthFromGroundTruth(depth);
 
 	map->initializeFromGTDepth(currentKeyFrame.get());
@@ -861,7 +864,7 @@ void SlamSystem::randomInit(uchar* image, double timeStamp, int id)
 
 	currentKeyFrameMutex.lock();
 
-	currentKeyFrame = std::make_shared<Frame>(id, width, height, K, timeStamp, image);
+	currentKeyFrame.reset(new Frame(id, width, height, K, timeStamp, image));
 	map->initializeRandomly(currentKeyFrame.get());
 	keyFrameGraph->addFrame(currentKeyFrame.get());
 
@@ -887,7 +890,7 @@ void SlamSystem::randomInit(uchar* image, double timeStamp, int id)
 void SlamSystem::trackFrame(uchar* image, unsigned int frameID, bool blockUntilMapped, double timestamp)
 {
 	// Create new frame
-	std::shared_ptr<Frame> trackingNewFrame = std::make_shared<Frame>(frameID, width, height, K, timestamp, image);
+	std::shared_ptr<Frame> trackingNewFrame(new Frame(frameID, width, height, K, timestamp, image));
 
 	if(!trackingIsGood)
 	{
@@ -1231,10 +1234,11 @@ int SlamSystem::findConstraintsForNewKeyFrames(Frame* newKeyFrame, bool forcePar
 	newKeyFrame->lastConstraintTrackedCamToWorld = newKeyFrame->getScaledCamToWorld();
 
 	// =============== get all potential candidates and their initial relative pose. =================
-	std::vector<KFConstraintStruct*> constraints;
+	std::vector<KFConstraintStruct*, Eigen::aligned_allocator<KFConstraintStruct*> > constraints;
 	Frame* fabMapResult = 0;
-	std::unordered_set<Frame*> candidates = trackableKeyFrameSearch->findCandidates(newKeyFrame, fabMapResult, useFABMAP, closeCandidatesTH);
-	std::map< Frame*, Sim3 > candidateToFrame_initialEstimateMap;
+	std::unordered_set<Frame*, std::hash<Frame*>, std::equal_to<Frame*>,
+		Eigen::aligned_allocator< Frame* > > candidates = trackableKeyFrameSearch->findCandidates(newKeyFrame, fabMapResult, useFABMAP, closeCandidatesTH);
+	std::map< Frame*, Sim3, std::less<Frame*>, Eigen::aligned_allocator<std::pair<Frame*, Sim3> > > candidateToFrame_initialEstimateMap;
 
 
 	// erase the ones that are already neighbours.
@@ -1268,8 +1272,9 @@ int SlamSystem::findConstraintsForNewKeyFrames(Frame* newKeyFrame, bool forcePar
 
 	// =============== distinguish between close and "far" candidates in Graph =================
 	// Do a first check on trackability of close candidates.
-	std::unordered_set<Frame*> closeCandidates;
-	std::vector<Frame*> farCandidates;
+	std::unordered_set<Frame*, std::hash<Frame*>, std::equal_to<Frame*>,
+		Eigen::aligned_allocator< Frame* > > closeCandidates;
+	std::vector<Frame*, Eigen::aligned_allocator<Frame*> > farCandidates;
 	Frame* parent = newKeyFrame->hasTrackingParent() ? newKeyFrame->getTrackingParent() : 0;
 
 	int closeFailed = 0;
@@ -1683,7 +1688,7 @@ SE3 SlamSystem::getCurrentPoseEstimate()
 	return camToWorld;
 }
 
-std::vector<FramePoseStruct*> SlamSystem::getAllPoses()
+std::vector<FramePoseStruct*, Eigen::aligned_allocator<FramePoseStruct*> > SlamSystem::getAllPoses()
 {
 	return keyFrameGraph->allFramePoses;
 }
