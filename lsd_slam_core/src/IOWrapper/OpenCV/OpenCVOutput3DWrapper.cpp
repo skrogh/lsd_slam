@@ -45,10 +45,13 @@ OpenCVOutput3DWrapper::OpenCVOutput3DWrapper(int width, int height)
 
 	publishLvl=0;
 
+	pathFile.open("test.txt", std::ofstream::out);
+
 }
 
 OpenCVOutput3DWrapper::~OpenCVOutput3DWrapper()
 {
+	pathFile.close();
 }
 
 
@@ -109,15 +112,36 @@ void OpenCVOutput3DWrapper::publishTrackedFrame(Frame* f)
 	Eigen::Quaterniond q = camToWorld.quaternion();
 	double s = camToWorld.scale();
 	Eigen::Vector3d t = camToWorld.translation();
-	q.normalize();
-	Eigen::Quaterniond q_ = q.conjugate();
-	Eigen::Vector3d t_ = -q_._transformVector(t);
+	
+	pathFile  << t.transpose() << " "
+	<< q.coeffs().transpose() << " "
+	<< s;
+
+	if (f->pose->trackingParent!=nullptr)
+	{
+		Sim3 keyframeToWorld = f->pose->trackingParent->getCamToWorld();
+		pathFile << " "
+		<< keyframeToWorld.translation().transpose() << " "
+		<< keyframeToWorld.quaternion().coeffs().transpose() << " "
+		<< keyframeToWorld.scale() << " ";
+
+		Sim3 camToKeyframe = f->pose->thisToParent_raw;
+		pathFile << " "
+		<< camToKeyframe.translation().transpose() << " "
+		<< camToKeyframe.quaternion().coeffs().transpose() << " "
+		<< camToKeyframe.scale();
+	}
+
+	pathFile << std::endl;
+	
+	//pathFile << t.transpose() << " " << q.coeffs().transpose << std::endl;
+	
 
 	static unsigned int i = 0;
 	if ( i++ % 40 == 0 ) {
 		
 		printf( "current pose is: X: %.3f Y: %.3f Z: %.3f\n", t(0), t(1), t(2) );
-		printf( "qx: %.3f qy: %.3f qz: %.3f qw %.3f\n", q_.x(), q_.y(), q_.z(), q_.w() );
+		printf( "qx: %.3f qy: %.3f qz: %.3f qw %.3f\n", q.x(), q.y(), q.z(), q.w() );
 		Eigen::Vector3d x(1, 0, 0);
 		Eigen::Vector3d y(0, 1, 0);
 		Eigen::Vector3d z(0, 0, 1);

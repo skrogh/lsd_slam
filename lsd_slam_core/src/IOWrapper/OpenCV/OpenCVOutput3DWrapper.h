@@ -21,6 +21,7 @@
 #pragma once
 
 #include "IOWrapper/Output3DWrapper.h"
+#include <fstream>
 
 
 namespace lsd_slam
@@ -81,6 +82,6 @@ public:
 	
 private:
 	int width, height;
-	FILE *gnuplot;
+	std::ofstream pathFile; // for debugging
 };
 }
