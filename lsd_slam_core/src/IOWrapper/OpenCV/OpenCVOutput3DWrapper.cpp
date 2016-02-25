@@ -45,7 +45,7 @@ OpenCVOutput3DWrapper::OpenCVOutput3DWrapper(int width, int height)
 
 	publishLvl=0;
 
-	pathFile.open("test.txt", std::ofstream::out);
+	pathFile.open("slamPath.txt", std::ofstream::out);
 
 }
 
@@ -129,7 +129,9 @@ void OpenCVOutput3DWrapper::publishTrackedFrame(Frame* f)
 		pathFile << " "
 		<< camToKeyframe.translation().transpose() << " "
 		<< camToKeyframe.quaternion().coeffs().transpose() << " "
-		<< camToKeyframe.scale();
+		<< camToKeyframe.scale() << " ";
+
+		pathFile << f->timeStampNs();
 	}
 
 	pathFile << std::endl;
