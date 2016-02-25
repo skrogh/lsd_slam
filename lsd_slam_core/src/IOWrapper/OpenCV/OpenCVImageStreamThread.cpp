@@ -28,6 +28,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <chrono>
 
 
 namespace lsd_slam
@@ -111,8 +112,10 @@ void OpenCVImageStreamThread::operator()()
 		TimestampedMat bufferItem;
 		Mat frame;
 
-		bufferItem.timeStampNs = 0; //TODO: add chrono higtresolution timer
+		
 		cap >> frame;
+		bufferItem.timeStampNs =  std::chrono::duration_cast<std::chrono::nanoseconds>(
+				std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
 		if( frame.empty() ) { 
 			printf( "Camera error!\n");
