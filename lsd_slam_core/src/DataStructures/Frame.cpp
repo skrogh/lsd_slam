@@ -32,9 +32,9 @@ int privateFrameAllocCount = 0;
 
 
 
-Frame::Frame(int id, int width, int height, const Eigen::Matrix3f& K, double timestamp, const unsigned char* image)
+Frame::Frame(int id, int width, int height, const Eigen::Matrix3f& K, uint64_t timeStampNs, const unsigned char* image)
 {
-	initialize(id, width, height, K, timestamp);
+	initialize(id, width, height, K, timeStampNs);
 	
 	data.image[0] = FrameMemory::getInstance().getFloatBuffer(data.width[0]*data.height[0]);
 	float* maxPt = data.image[0] + data.width[0]*data.height[0];
@@ -53,9 +53,9 @@ Frame::Frame(int id, int width, int height, const Eigen::Matrix3f& K, double tim
 		printf("ALLOCATED frame %d, now there are %d\n", this->id(), privateFrameAllocCount);
 }
 
-Frame::Frame(int id, int width, int height, const Eigen::Matrix3f& K, double timestamp, const float* image)
+Frame::Frame(int id, int width, int height, const Eigen::Matrix3f& K, uint64_t timeStampNs, const float* image)
 {
-	initialize(id, width, height, K, timestamp);
+	initialize(id, width, height, K, timeStampNs);
 	
 	data.image[0] = FrameMemory::getInstance().getFloatBuffer(data.width[0]*data.height[0]);
 	memcpy(data.image[0], image, data.width[0]*data.height[0] * sizeof(float));
@@ -394,7 +394,7 @@ bool Frame::minimizeInMemory()
 	return false;
 }
 
-void Frame::initialize(int id, int width, int height, const Eigen::Matrix3f& K, double timestamp)
+void Frame::initialize(int id, int width, int height, const Eigen::Matrix3f& K, uint64_t timeStampNs)
 {
 	data.id = id;
 	
@@ -412,7 +412,7 @@ void Frame::initialize(int id, int width, int height, const Eigen::Matrix3f& K, 
 	data.cxInv[0] = data.KInv[0](0,2);
 	data.cyInv[0] = data.KInv[0](1,2);
 	
-	data.timestamp = timestamp;
+	data.timeStampNs = timeStampNs;
 
 	data.hasIDepthBeenSet = false;
 	depthHasBeenUpdatedFlag = false;

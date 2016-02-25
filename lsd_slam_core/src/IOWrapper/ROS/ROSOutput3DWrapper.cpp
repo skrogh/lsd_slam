@@ -75,7 +75,7 @@ void ROSOutput3DWrapper::publishKeyframe(Frame* f)
 	boost::shared_lock<boost::shared_mutex> lock = f->getActiveLock();
 
 	fMsg.id = f->id();
-	fMsg.time = f->timestamp();
+	fMsg.time = f->timeStampNs()/1000000.0;
 	fMsg.isKeyframe = true;
 
 	int w = f->width(publishLvl);
@@ -117,7 +117,7 @@ void ROSOutput3DWrapper::publishTrackedFrame(Frame* kf)
 
 
 	fMsg.id = kf->id();
-	fMsg.time = kf->timestamp();
+	fMsg.time = kf->timeStampNs()/1000000.0;
 	fMsg.isKeyframe = false;
 
 
@@ -154,7 +154,7 @@ void ROSOutput3DWrapper::publishTrackedFrame(Frame* kf)
 		pMsg.pose.orientation.w *= -1;
 	}
 
-	pMsg.header.stamp = ros::Time(kf->timestamp());
+	pMsg.header.stamp = ros::Time(kf->timeStampNs()/1000000.0);
 	pMsg.header.frame_id = "world";
 	pose_publisher.publish(pMsg);
 }

@@ -25,8 +25,6 @@
 
 #include <opencv2/core/core.hpp>
 
-#include "IOWrapper/Timestamp.h"
-
 
 namespace lsd_slam
 {
@@ -35,7 +33,7 @@ template<typename T>
 struct TimestampedObject
 {
 	T data;
-	Timestamp timestamp;
+	uint64_t timeStampNs;
 };
 
 typedef TimestampedObject< cv::Mat > TimestampedMat;

@@ -20,12 +20,12 @@
 
 #pragma once
 #include <vector>
+#include <cstdint>
 #include <boost/thread.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/locks.hpp>
 #include "util/settings.h"
-#include "IOWrapper/Timestamp.h"
 #include "opencv2/core/core.hpp"
 
 #include "util/SophusUtil.h"
@@ -73,8 +73,8 @@ public:
 	SlamSystem& operator=(const SlamSystem&) = delete;
 	~SlamSystem();
 
-	void randomInit(uchar* image, double timeStamp, int id);
-	void gtDepthInit(uchar* image, float* depth, double timeStamp, int id);
+	void randomInit(uchar* image, uint64_t timeStampNs, int id);
+	void gtDepthInit(uchar* image, float* depth, uint64_t timeStampNs, int id);
 
 	
 
@@ -82,7 +82,7 @@ public:
 	// first frame will return Identity = camToWord.
 	// returns camToWord transformation of the tracked frame.
 	// frameID needs to be monotonically increasing.
-	void trackFrame(uchar* image, unsigned int frameID, bool blockUntilMapped, double timestamp);
+	void trackFrame(uchar* image, unsigned int frameID, bool blockUntilMapped, uint64_t timeStampNs);
 
 	// finalizes the system, i.e. blocks and does all remaining loop-closures etc.
 	void finalize();

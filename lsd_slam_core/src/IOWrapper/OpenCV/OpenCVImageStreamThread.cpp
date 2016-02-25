@@ -111,7 +111,7 @@ void OpenCVImageStreamThread::operator()()
 		TimestampedMat bufferItem;
 		Mat frame;
 
-		bufferItem.timestamp =  Timestamp(0);
+		bufferItem.timeStampNs = 0; //TODO: add chrono higtresolution timer
 		cap >> frame;
 
 		if( frame.empty() ) { 

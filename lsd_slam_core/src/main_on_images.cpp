@@ -215,7 +215,7 @@ int main( int argc, char** argv )
 
 	cv::Mat image = cv::Mat(h,w,CV_8U);
 	int runningIDX=0;
-	float fakeTimeStamp = 0;
+	uint64_t fakeTimeStamp = 0;
 
 	ros::Rate r(hz);
 
@@ -243,7 +243,7 @@ int main( int argc, char** argv )
 		else
 			system->trackFrame(image.data, runningIDX ,hz == 0,fakeTimeStamp);
 		runningIDX++;
-		fakeTimeStamp+=0.03;
+		fakeTimeStamp+=30000000l;
 
 		if(hz != 0)
 			r.sleep();

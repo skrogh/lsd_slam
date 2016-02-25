@@ -45,9 +45,9 @@ public:
 	friend class FrameMemory;
 
 
-	Frame(int id, int width, int height, const Eigen::Matrix3f& K, double timestamp, const unsigned char* image);
+	Frame(int id, int width, int height, const Eigen::Matrix3f& K, uint64_t timeStampNs, const unsigned char* image);
 
-	Frame(int id, int width, int height, const Eigen::Matrix3f& K, double timestamp, const float* image);
+	Frame(int id, int width, int height, const Eigen::Matrix3f& K, uint64_t timeStampNs, const float* image);
 
 	~Frame();
 	
@@ -97,7 +97,7 @@ public:
 	inline float cyInv(int level = 0) const;
 	
 	/** Returns the frame's recording timestamp. */
-	inline double timestamp() const;
+	inline uint64_t timeStampNs() const;
 	
 	inline float* image(int level = 0);
 	inline const Eigen::Vector4f* gradients(int level = 0);
@@ -210,7 +210,7 @@ private:
 	void require(int dataFlags, int level = 0);
 	void release(int dataFlags, bool pyramidsOnly, bool invalidateOnly);
 
-	void initialize(int id, int width, int height, const Eigen::Matrix3f& K, double timestamp);
+	void initialize(int id, int width, int height, const Eigen::Matrix3f& K, uint64_t timeStampNs);
 	void setDepth_Allocate();
 	
 	void buildImage(int level);
@@ -238,7 +238,7 @@ private:
 		float fx[PYRAMID_LEVELS], fy[PYRAMID_LEVELS], cx[PYRAMID_LEVELS], cy[PYRAMID_LEVELS];
 		float fxInv[PYRAMID_LEVELS], fyInv[PYRAMID_LEVELS], cxInv[PYRAMID_LEVELS], cyInv[PYRAMID_LEVELS];
 		
-		double timestamp;
+		uint64_t timeStampNs;
 
 		
 		float* image[PYRAMID_LEVELS];
@@ -348,9 +348,9 @@ inline float Frame::cyInv(int level) const
 	return data.cyInv[level];
 }
 
-inline double Frame::timestamp() const
+inline uint64_t Frame::timeStampNs() const
 {
-	return data.timestamp;
+	return data.timeStampNs;
 }
 
 
