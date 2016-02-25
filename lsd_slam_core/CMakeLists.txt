@@ -28,22 +28,26 @@ find_package(Boost REQUIRED COMPONENTS thread system)
 #add_definitions("-DHAVE_FABMAP")
 #set(FABMAP_LIB openFABMAP )
 
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^x86_64" )
+	message(STATUS "Architecture is x84_64, compiling with SSE")
+	# SSE flags
+	add_definitions("-DENABLE_SSE")
 
-# SSE flags
-#add_definitions("-DENABLE_SSE")
+	# Also add some useful compiler flag
+	set(CMAKE_CXX_FLAGS
+	   "${CMAKE_CXX_FLAGS} ${SSE_FLAGS} -march=native  -std=c++0x"
+	)
+endif()
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+	message(STATUS "Architecture is arm, compiling with NEON")
+	# NEON flags
+	add_definitions("-DENABLE_NEON")
 
-# Also add some useful compiler flag
-#set(CMAKE_CXX_FLAGS
-#   "${CMAKE_CXX_FLAGS} ${SSE_FLAGS} -march=native  -std=c++0x"
-#)
-
-# NEON flags
-add_definitions("-DENABLE_NEON")
-
-# Also add some useful compiler flag
-set(CMAKE_CXX_FLAGS
-   "${CMAKE_CXX_FLAGS} -O2 -march=native -mfpu=neon -std=c++0x"
-)  
+	# Also add some useful compiler flag
+	set(CMAKE_CXX_FLAGS
+	   "${CMAKE_CXX_FLAGS} -O2 -march=native -mfpu=neon -std=c++0x"
+	)  
+endif()
 
 # Set source files
 set(lsd_SOURCE_FILES
