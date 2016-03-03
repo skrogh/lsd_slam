@@ -30,6 +30,9 @@
 #include <fstream>
 #include <chrono>
 
+#include <unistd.h>
+#include <sys/syscall.h>
+
 
 namespace lsd_slam
 {
@@ -85,6 +88,7 @@ void OpenCVImageStreamThread::run()
 
 void OpenCVImageStreamThread::operator()()
 {
+	std::clog << "Image grabber thread started. PID: " << (int) syscall(SYS_gettid) << std::endl;
 	// Main thread here. Grab and decode images:
 	VideoCapture cap;
 	// open the default camera, use something different from 0 otherwise;
