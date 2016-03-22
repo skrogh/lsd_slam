@@ -147,9 +147,9 @@ void OpenCVOutput3DWrapper::publishTrackedFrame(Frame* f)
 		Eigen::Vector3d x(1, 0, 0);
 		Eigen::Vector3d y(0, 1, 0);
 		Eigen::Vector3d z(0, 0, 1);
-		x = q._transformVector(x);
-		y = q._transformVector(y);
-		z = q._transformVector(z);
+		x = q.normalized()._transformVector(x);
+		y = q.normalized()._transformVector(y);
+		z = q.normalized()._transformVector(z);
 		printf( "x axis is: X: %.3f Y: %.3f Z: %.3f\n", x(0), x(1), x(2) );
 		printf( "y axis is: X: %.3f Y: %.3f Z: %.3f\n", y(0), y(1), y(2) );
 		printf( "z axis is: X: %.3f Y: %.3f Z: %.3f\n", z(0), z(1), z(2) );
