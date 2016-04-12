@@ -47,6 +47,7 @@ Frame::Frame(int id, int width, int height, const Eigen::Matrix3f& K, uint64_t t
 
 	data.imageValid[0] = true;
 
+
 	privateFrameAllocCount++;
 
 	if(enablePrintDebugInfo && printMemoryDebugInfo)
@@ -657,20 +658,30 @@ void Frame::buildGradients(int level)
 		data.gradients[level] = (Eigen::Vector4f*)FrameMemory::getInstance().getBuffer(sizeof(Eigen::Vector4f) * width * height);
 	const float* img_pt = data.image[level] + width;
 	const float* img_pt_max = data.image[level] + width*(height-1);
+	const bool* occ_pt = occludedImage.getMap(level) + width; // Ignore occluded part of image
 	Eigen::Vector4f* gradxyii_pt = data.gradients[level] + width;
 	
 	// in each iteration i need -1,0,p1,mw,pw
 	float val_m1 = *(img_pt-1);
 	float val_00 = *img_pt;
 	float val_p1;
+	float val_pw;
+	float val_mw;
 
-	for(; img_pt < img_pt_max; img_pt++, gradxyii_pt++)
+	for(; img_pt < img_pt_max; img_pt++, gradxyii_pt++, occ_pt++)
 	{
 		val_p1 = *(img_pt+1);
 
 		*((float*)gradxyii_pt) = 0.5f*(val_p1 - val_m1);
 		*(((float*)gradxyii_pt)+1) = 0.5f*(*(img_pt+width) - *(img_pt-width));
 		*(((float*)gradxyii_pt)+2) = val_00;
+
+
+		if ( *occ_pt ) // Ignore
+		{
+			*((float*)gradxyii_pt) = 0.0f;
+			*(((float*)gradxyii_pt)+1) = 0.0f;
+		}
 
 		val_m1 = val_00;
 		val_00 = val_p1;

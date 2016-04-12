@@ -99,7 +99,7 @@ void OpenCVImageStreamThread::operator()()
 	}
 	cap.set(CV_CAP_PROP_FRAME_WIDTH,320); // TODO change to match calib file
 	cap.set(CV_CAP_PROP_FRAME_HEIGHT,240);
-	cap.set(CV_CAP_PROP_FPS,60);
+	cap.set(CV_CAP_PROP_FPS,30);
 	{
 		Mat frame;
 		cap >> frame;
@@ -116,7 +116,6 @@ void OpenCVImageStreamThread::operator()()
 		TimestampedMat bufferItem;
 		Mat frame;
 
-		
 		cap >> frame;
 		bufferItem.timeStampNs =  std::chrono::duration_cast<std::chrono::nanoseconds>(
 				std::chrono::high_resolution_clock::now().time_since_epoch()).count();

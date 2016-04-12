@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <opencv2/opencv.hpp>
 #include <string.h>
 #include <string>
 
@@ -95,13 +96,13 @@ namespace lsd_slam
 	#define RELOCALIZE_THREADS 6
 #endif
 
-#define SE3TRACKING_MIN_LEVEL 1
-#define SE3TRACKING_MAX_LEVEL 5
+#define SE3TRACKING_MIN_LEVEL 1 //1
+#define SE3TRACKING_MAX_LEVEL 3 //5
 
-#define SIM3TRACKING_MIN_LEVEL 1
-#define SIM3TRACKING_MAX_LEVEL 5
+#define SIM3TRACKING_MIN_LEVEL 1 //1
+#define SIM3TRACKING_MAX_LEVEL 3 //5
 
-#define QUICK_KF_CHECK_LVL 4
+#define QUICK_KF_CHECK_LVL 2 //4
 
 #define PYRAMID_LEVELS (SE3TRACKING_MAX_LEVEL > SIM3TRACKING_MAX_LEVEL ? SE3TRACKING_MAX_LEVEL : SIM3TRACKING_MAX_LEVEL)
 
@@ -400,6 +401,21 @@ public:
 	float huber_d;
 	float var_weight;
 };
+
+class OccludedImage
+{
+public:
+	OccludedImage();
+	~OccludedImage();
+	void BuildFromImage( cv::Mat image );
+	bool* getMap( int level );
+private:
+	bool* map[PYRAMID_LEVELS];
+	int width;
+	int height;
+	bool initialized;
+};
+extern OccludedImage occludedImage;
 
 extern RunningStats runningStats;
 

@@ -27,6 +27,8 @@
 namespace lsd_slam
 {
 RunningStats runningStats;
+OccludedImage occludedImage;
+
 
 
 bool autoRun = true;
@@ -172,5 +174,79 @@ void handleKey(char k)
 	}
 
 }
+
+OccludedImage::OccludedImage()
+{
+	initialized = false;
+	// Init with blank image?
+}
+OccludedImage::~OccludedImage()
+{
+	// Release old data
+	if ( initialized )
+	{
+		for ( int i=0; i<PYRAMID_LEVELS; i++)
+		{
+			delete[] map[i];
+		}
+	}
+}
+void OccludedImage::BuildFromImage( cv::Mat image )
+{
+	CV_Assert( image.type() == CV_8UC1 );
+	// Set top level width/height
+	width = image.cols;
+	height = image.rows;
+	// Release old data
+	if ( initialized )
+	{
+		for ( int i=0; i<PYRAMID_LEVELS; i++)
+		{
+			delete[] map[i];
+		}
+	}
+	// Allocate data
+	for ( int i=0; i<PYRAMID_LEVELS; i++)
+	{
+		map[i] = new bool[(width*height)>>(2*i)];
+	}
+	// Calculate different pyramid levels
+	cv::Mat currentLevel = image;
+	cv::Mat kernel = (cv::Mat_<uchar>(3,3) << 0, 1, 0, 1, 1, 1, 0, 1, 0);
+	for ( int i=0; i<PYRAMID_LEVELS; i++)
+	{
+		// Threshold
+		cv::threshold(currentLevel,currentLevel,0,255,CV_THRESH_BINARY);
+		// morph (only on image being saved)
+		cv::Mat dilated;
+		cv::dilate(currentLevel, dilated, kernel, cv::Point(-1,-1), 2, cv::BORDER_CONSTANT, cv::Scalar(1) );
+		// save to 'map'
+		bool* ptr_max = map[i] + ((width*height)>>(2*i));
+		int j = 0;
+		for ( bool* ptr = map[i]; ptr<ptr_max; ptr++ )
+		{
+			*ptr = dilated.at<uchar>(j++) != 0;
+		}
+		// downscale
+		cv::Mat nextLevel(height>>(i+1),width>>(i+1),CV_8UC1);
+		for ( int j = 0; j < ((height*width)>>(2*(i+1))); j++ )
+		{	
+			int index = j*2 + (j*2)/(width>>i)*(width>>i);
+			nextLevel.at<uchar>(j) = ( currentLevel.at<uchar>(index)
+				| currentLevel.at<uchar>(index + 1)
+				| currentLevel.at<uchar>(index + (width>>i))
+				| currentLevel.at<uchar>(index + 1 + (width>>i)) )*1;
+		}
+		currentLevel = nextLevel;
+	}
+	initialized = true;
+
+}
+bool* OccludedImage::getMap( int level )
+{
+	assert( initialized );
+	return map[level];
+}
+
 
 }

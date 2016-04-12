@@ -40,6 +40,10 @@ int main( int argc, char** argv )
 
 	InputImageStream* inputStream = new OpenCVImageStreamThread();
 
+	// Set LSD slam parameters
+	cv::Mat occlusion = cv::imread("occlusion.png", CV_LOAD_IMAGE_GRAYSCALE );
+	lsd_slam::occludedImage.BuildFromImage( occlusion );
+	
 	inputStream->setCalibration("calib.txt");
 	inputStream->run();
 
